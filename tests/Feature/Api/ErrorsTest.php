@@ -28,7 +28,7 @@ it('возвращает тексты валидации на русском', f
 
     $response->assertStatus(400)
         ->assertJsonPath('meta.success', false)
-        ->assertJsonPath('meta.error', 'Поле имя обязательно для заполнения.');
+        ->assertJsonPath('meta.error', 'Поле name обязательно для заполнения.');
 });
 
 it('переводит ошибку способности токена на русский', function (): void {
