@@ -100,6 +100,17 @@ Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman
 - `app/Http/Api/Middleware/TransformApiResponse` — middleware-обёртка успешных ответов API в `{meta, data}`
 - `app/Http/Helpers/ResponseHelper` — конструктор обёрток (`getResponseWrap`, `getNotAuthorizedResponseWrap`, `getExceptionResponseWrap`)
 - JSON принудительно включён для `api/*` (`shouldRenderJsonWhen` в `bootstrap/app.php`)
+- `app/Http/Api/Controllers/ApiController` + аннотации `@OA\...` в контроллерах — Swagger-документация (l5-swagger)
+
+## Swagger
+
+Swagger UI: [`/api/documentation`](http://127.0.0.1:8000/api/documentation) (при запущенном `php artisan serve`), JSON-спека: `GET /docs`.
+
+Аннотации описаны в PHPDoc контроллеров; общие схемы обёртки (`Meta`, `AuthData`, `FeedData`, `ErrorResponse` и др.) — в `app/Http/Api/Controllers/ApiController.php`. После правки аннотаций перегенерировать:
+
+```bash
+php artisan l5-swagger:generate
+```
 
 ## Тесты
 
