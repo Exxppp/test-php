@@ -44,9 +44,11 @@ class PostsTable
                     ->label('Дата публикации')
                     ->form([
                         DatePicker::make('date_from')
-                            ->label('От'),
+                            ->label('От')
+                            ->native(false),
                         DatePicker::make('date_to')
-                            ->label('До'),
+                            ->label('До')
+                            ->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query

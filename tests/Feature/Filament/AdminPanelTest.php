@@ -49,6 +49,46 @@ it('redirect обычного пользователя (403) со страниц
     $this->actingAs($regular)->get('/admin')->assertForbidden();
 });
 
+it('называет страницы создания с русскими падежами', function (): void {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    $this->get('/admin/users/create')
+        ->assertOk()
+        ->assertSee('Создать пользователя')
+        ->assertSee('Создать и создать ещё')
+        ->assertDontSee('Создать Пользователь')
+        ->assertDontSee('Создать и Создать еще');
+
+    $this->get('/admin/posts/create')
+        ->assertOk()
+        ->assertSee('Создать публикацию')
+        ->assertDontSee('Создать Публикацию');
+});
+
+it('называет страницы редактирования с русскими падежами', function (): void {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+    $user = User::factory()->create();
+
+    $this->get('/admin/users/'.$user->id.'/edit')
+        ->assertOk()
+        ->assertSee('Редактирование пользователя')
+        ->assertDontSee('Редактирование Пользователь');
+});
+
+it('рисует календарь Filament вместо нативного виджета браузера', function (): void {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    // Нативный input рисует браузер на языке интерфейса Chrome;
+    // календарь Filament локализуется через APP_LOCALE
+    expect($this->get('/admin/users/create')->getContent())
+        ->not->toContain('datetime-local')
+        ->and($this->get('/admin/posts')->getContent())
+        ->not->toContain('datetime-local');
+});
+
 it('показывает форму входа в админку', function (): void {
     $this->get('/admin/login')->assertOk();
 });
