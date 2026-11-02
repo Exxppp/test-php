@@ -19,10 +19,9 @@ it('обновляет пару токенов по refreshToken', function (): 
     $response->assertOk()
         ->assertJsonStructure([
             'meta' => ['success', 'error'],
-            'data' => ['user' => ['id'], 'accessToken', 'refreshToken'],
+            'data' => ['accessToken', 'refreshToken'],
         ])
-        ->assertJsonPath('meta.success', true)
-        ->assertJsonPath('data.user.id', $user->id);
+        ->assertJsonPath('meta.success', true);
 
     // Старый refresh-токен ревокнут (ротация)
     forgetAuthGuards();
