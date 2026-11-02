@@ -18,9 +18,9 @@ use Laravel\Sanctum\PersonalAccessToken;
  */
 final class AuthService
 {
-    private const ACCESS_TOKEN_NAME = 'access_token';
+    public const ACCESS_TOKEN_NAME = 'access_token';
 
-    private const REFRESH_TOKEN_NAME = 'refresh_token';
+    public const REFRESH_TOKEN_NAME = 'refresh_token';
 
     private const ACCESS_TOKEN_TTL_MINUTES = 60;
 

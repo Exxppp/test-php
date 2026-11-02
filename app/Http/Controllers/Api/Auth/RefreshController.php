@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Api\Controllers\ApiController;
+use App\Http\Helpers\ResponseHelper;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 
@@ -33,11 +34,6 @@ final class RefreshController extends ApiController
      */
     public function __invoke(AuthService $auth): JsonResponse
     {
-        $result = $auth->refresh();
-
-        return response()->json([
-            'access_token' => $result->accessToken,
-            'refresh_token' => $result->refreshToken,
-        ]);
+        return response()->json(ResponseHelper::tokenPayload($auth->refresh()));
     }
 }

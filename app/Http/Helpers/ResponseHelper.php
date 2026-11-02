@@ -5,6 +5,7 @@ namespace App\Http\Helpers;
 use App\Exceptions\Api\ApiException;
 use App\Http\Resources\UserResource;
 use App\Services\AuthResult;
+use App\Services\AuthService;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -15,10 +16,18 @@ final class ResponseHelper
      */
     public static function authPayload(AuthResult $result): array
     {
+        return ['user' => new UserResource($result->user)] + self::tokenPayload($result);
+    }
+
+    /**
+     * Пара токенов без пользователя (для refresh). Ключи payload'а
+     * совпадают с именами токенов из AuthService.
+     */
+    public static function tokenPayload(AuthResult $result): array
+    {
         return [
-            'user' => new UserResource($result->user),
-            'access_token' => $result->accessToken,
-            'refresh_token' => $result->refreshToken,
+            AuthService::ACCESS_TOKEN_NAME => $result->accessToken,
+            AuthService::REFRESH_TOKEN_NAME => $result->refreshToken,
         ];
     }
 
