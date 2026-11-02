@@ -7,7 +7,7 @@ API и админка для мобильного приложения «Бло�
 
 - Laravel 12, PHP 8.4, Composer
 - MySQL 8+ (миграции обязательны)
-- Laravel Sanctum — `accessToken` (60 мин, ability `access`) + `refreshToken` (30 дней, ability `refresh`), выпускаются через `$user->createToken()`
+- Laravel Sanctum — `access_token` (60 мин, ability `access`) + `refresh_token` (30 дней, ability `refresh`), выпускаются через `$user->createToken()`
 - Filament 4 — админка `/admin`
 - Pest — автотесты
 
@@ -39,7 +39,7 @@ php artisan serve           # http://127.0.0.1:8000
 }
 ```
 
-- успех: `meta.success = true`, `meta.error` пустой; данные — в `data` под именованными ключами (`user`, `accessToken`, `refreshToken`, `post`, `posts`, `pagination`);
+Регистрация/вход: `data: {user, access_token, refresh_token}`; ротация (refresh) — только `data: {access_token, refresh_token}`.
 - ошибки (401/404/409/400): `meta.success = false`, текст — в `meta.error`, `data: []`;
 - при 401 дополнительно `meta.invalid_access_token = true` — сигнал клиенту перелогиниться;
 - ошибки валидации — HTTP 400, в `meta.error` текст первой ошибки;
@@ -92,7 +92,8 @@ Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman
 ## Архитектура (тонкие контроллеры)
 
 - `app/Http/Controllers/Api` — контроллеры-одноклассники: только валидация → сервис → ответ
-- `app/Http/Requests` — валидация и нормализация входящих параметров
+- `app/Http/Requests` — валидация входящих параметров; `toDto()` транслирует validated в DTO
+- `app/Http/Dto` — DTO-носители (`RegisterData`, `LoginData`, `CreatePostData`, `ListPostData`)
 - `app/Services` — бизнес-логика и обработка ошибок (`AuthService`, `PostService`)
 - `app/Http/Resources` — сериализация ответов (`UserResource`, `PostResource`)
 - `app/Exceptions/Api` — доменные исключения (401/409); единый JSON-рендер в обёртке — обработчик исключений в `bootstrap/app.php`

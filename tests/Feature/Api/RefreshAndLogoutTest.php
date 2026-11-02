@@ -19,7 +19,7 @@ it('обновляет пару токенов по refreshToken', function (): 
     $response->assertOk()
         ->assertJsonStructure([
             'meta' => ['success', 'error'],
-            'data' => ['accessToken', 'refreshToken'],
+            'data' => ['access_token', 'refresh_token'],
         ])
         ->assertJsonPath('meta.success', true);
 
@@ -32,13 +32,13 @@ it('обновляет пару токенов по refreshToken', function (): 
 
     // Новый refreshToken нельзя использовать вместо accessToken
     forgetAuthGuards();
-    $this->withToken($response->json('data.refreshToken'))
+    $this->withToken($response->json('data.refresh_token'))
         ->getJson('/api/posts')
         ->assertForbidden();
 
     // Новая пара рабочая
     forgetAuthGuards();
-    $this->withToken($response->json('data.accessToken'))->getJson('/api/posts')->assertOk();
+    $this->withToken($response->json('data.access_token'))->getJson('/api/posts')->assertOk();
 });
 
 it('не обновляет токены по accessToken', function (): void {

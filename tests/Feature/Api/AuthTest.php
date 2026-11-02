@@ -14,8 +14,8 @@ it('регистрирует пользователя и возвращает п
         ->assertJsonStructure([
             'meta' => ['success', 'error'],
             'data' => [
-                'accessToken',
-                'refreshToken',
+                'access_token',
+                'refresh_token',
                 'user' => ['id', 'name', 'email'],
             ],
         ])
@@ -26,7 +26,7 @@ it('регистрирует пользователя и возвращает п
     expect(User::query()->where('email', 'ivan@example.com')->exists())->toBeTrue();
 
     // Выданный accessToken сразу работает
-    $this->withToken($response->json('data.accessToken'))
+    $this->withToken($response->json('data.access_token'))
         ->getJson('/api/posts')
         ->assertOk();
 });
