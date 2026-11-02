@@ -54,7 +54,7 @@ it('не принимает refreshToken вместо accessToken', function ():
         ->assertJsonPath('meta.success', false);
 });
 
-it('возвращает ленту порциями с мета-информацией', function (): void {
+it('возвращает ленту порциями', function (): void {
     $user = User::factory()->create();
     Post::factory()->count(5)->for($user, 'author')->create();
     $access = $user->createToken('accessToken', ['access'])->plainTextToken;
@@ -66,19 +66,11 @@ it('возвращает ленту порциями с мета-информа�
             'meta' => ['success', 'error'],
             'data' => [
                 'posts' => [['id', 'title', 'text', 'author', 'created_at']],
-                'pagination',
             ],
         ]);
 
     expect($response->json('data.posts'))->toHaveCount(2)
-        ->and($response->json('data.pagination'))->toEqual([
-            'total' => 5,
-            'count' => 2,
-            'limit' => 2,
-            'offset' => 1,
-            'sort' => 'date',
-            'order' => 'desc',
-        ]);
+        ->and($response->json('data.pagination'))->toBeNull();
 });
 
 it('сортирует ленту по названию', function (): void {
@@ -122,12 +114,12 @@ it('фильтрует ленту по дате от и до', function (): void
     $response = $this->withToken($access)
         ->getJson('/api/posts?date_from='.now()->subDays(5)->toDateString());
 
-    expect($response->json('data.pagination.total'))->toBe(2);
+    expect($response->json('data.posts'))->toHaveCount(2);
 
     $response = $this->withToken($access)
         ->getJson('/api/posts?date_from='.now()->subDays(5)->toDateString().'&date_to='.now()->toDateString());
 
-    expect($response->json('data.pagination.total'))->toBe(2);
+    expect($response->json('data.posts'))->toHaveCount(2);
 });
 
 it('валидирует параметры сортировки и фильтров', function (): void {
@@ -154,6 +146,6 @@ it('возвращает только мои публикации', function ():
 
     $authors = collect($response->json('data.posts'))->pluck('author.id')->unique();
     expect($response->json('data.posts'))->toHaveCount(3)
-        ->and($response->json('data.pagination.total'))->toBe(3)
+        ->and($response->json('data.pagination'))->toBeNull()
         ->and($authors->values()->all())->toEqual([$alice->id]);
 });

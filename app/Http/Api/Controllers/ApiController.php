@@ -64,18 +64,6 @@ use Illuminate\Routing\Controller;
  *         ),
  *
  *         @OA\Schema(
- *             schema="Pagination",
- *             type="object",
- *
- *             @OA\Property(property="total", type="integer", example=25),
- *             @OA\Property(property="count", type="integer", example=15),
- *             @OA\Property(property="limit", type="integer", example=15),
- *             @OA\Property(property="offset", type="integer", example=0),
- *             @OA\Property(property="sort", type="string", enum={"date", "title"}, example="date"),
- *             @OA\Property(property="order", type="string", enum={"asc", "desc"}, example="desc")
- *         ),
- *
- *         @OA\Schema(
  *             schema="AuthData",
  *             type="object",
  *
@@ -108,9 +96,7 @@ use Illuminate\Routing\Controller;
  *                 type="array",
  *
  *                 @OA\Items(ref="#/components/schemas/PostResource")
- *             ),
- *
- *             @OA\Property(property="pagination", ref="#/components/schemas/Pagination")
+ *             )
  *         ),
  *
  *         @OA\Schema(

@@ -52,11 +52,10 @@ final class MyController extends ApiController
      */
     public function __invoke(ListPostsRequest $request, PostService $posts): JsonResponse
     {
-        $result = $posts->list($request->user(), $request->toDto());
+        $feed = $posts->list($request->user(), $request->toDto());
 
         return response()->json([
-            'posts' => PostResource::collection($result['posts']),
-            'pagination' => $result['meta'],
+            'posts' => PostResource::collection($feed),
         ]);
     }
 }

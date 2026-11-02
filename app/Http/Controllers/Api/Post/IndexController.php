@@ -30,7 +30,7 @@ final class IndexController extends ApiController
      *
      *     @OA\Response(
      *         response=200,
-     *         description="Порция публикаций и параметры выборки",
+     *         description="Порция публикаций",
      *
      *         @OA\JsonContent(ref="#/components/schemas/FeedResponse")
      *     ),
@@ -52,11 +52,10 @@ final class IndexController extends ApiController
      */
     public function __invoke(ListPostsRequest $request, PostService $posts): JsonResponse
     {
-        $result = $posts->list(author: null, filters: $request->toDto());
+        $feed = $posts->list(author: null, filters: $request->toDto());
 
         return response()->json([
-            'posts' => PostResource::collection($result['posts']),
-            'pagination' => $result['meta'],
+            'posts' => PostResource::collection($feed),
         ]);
     }
 }

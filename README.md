@@ -43,7 +43,7 @@ php artisan serve           # http://127.0.0.1:8000
 - ошибки (401/404/409/400): `meta.success = false`, текст — в `meta.error`, `data: []`;
 - при 401 дополнительно `meta.invalid_access_token = true` — сигнал клиенту перелогиниться;
 - ошибки валидации — HTTP 400, в `meta.error` текст первой ошибки;
-- списки порционно: `data.posts` + `data.pagination` `{total, count, limit, offset, sort, order}`.
+- списки порционно: `data.posts` (массив постов; без `pagination` — клиент определяет конец списка по количеству полученных записей).
 
 | Метод | URL | Описание |
 |---|---|---|

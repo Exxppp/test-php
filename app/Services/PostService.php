@@ -31,9 +31,9 @@ final class PostService
     /**
      * Порционная выборка публикаций с фильтрацией и сортировкой.
      *
-     * @return array{posts: Collection<int, Post>, meta: array<string, int|string>}
+     * @return Collection<int, Post>
      */
-    public function list(?User $author, ListPostData $filters): array
+    public function list(?User $author, ListPostData $filters): Collection
     {
         $query = Post::query()->with('author');
 
@@ -49,26 +49,12 @@ final class PostService
             $query->where('created_at', '<=', Carbon::parse($filters->dateTo)->endOfDay());
         }
 
-        $total = (clone $query)->count();
-
-        $posts = $query
+        return $query
             ->orderBy(self::SORTS[$filters->sort] ?? 'created_at', $filters->order)
             // Вторичное поле для детерминированной пагинации
             ->orderBy('id', $filters->order)
             ->offset($filters->offset)
             ->limit($filters->limit)
             ->get();
-
-        return [
-            'posts' => $posts,
-            'meta' => [
-                'total' => $total,
-                'count' => $posts->count(),
-                'limit' => $filters->limit,
-                'offset' => $filters->offset,
-                'sort' => $filters->sort,
-                'order' => $filters->order,
-            ],
-        ];
     }
 }
