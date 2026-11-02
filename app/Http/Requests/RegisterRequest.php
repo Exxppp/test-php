@@ -3,19 +3,13 @@
 namespace App\Http\Requests;
 
 use App\Http\Dto\RegisterData;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 /**
  * Входящие параметры регистрации пользователя.
  */
-class RegisterRequest extends FormRequest
+class RegisterRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, array<int, mixed>>
      */

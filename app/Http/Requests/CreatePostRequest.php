@@ -3,18 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Dto\CreatePostData;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Входящие параметры публикации поста в блог.
  */
-class CreatePostRequest extends FormRequest
+class CreatePostRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, array<int, string>>
      */

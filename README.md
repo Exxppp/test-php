@@ -92,7 +92,7 @@ Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman
 ## Архитектура (тонкие контроллеры)
 
 - `app/Http/Controllers/Api` — контроллеры-одноклассники: только валидация → сервис → ответ
-- `app/Http/Requests` — валидация входящих параметров; `toDto()` транслирует validated в DTO
+- `app/Http/Requests` — валидация входящих параметров; `toDto()` транслирует validated в DTO. Базы: `ApiRequest` (общая точка всех запросов), `ListRequest` (листовые запросы: правила пагинации `limit`/`offset` и сортировки `sort`/`order` описаны один раз; наследник задаёт только `allowedSorts()` и доменные фильтры)
 - `app/Http/Dto` — DTO-носители (`RegisterData`, `LoginData`, `CreatePostData`, `ListPostData`)
 - `app/Services` — бизнес-логика и обработка ошибок (`AuthService`, `PostService`)
 - `app/Http/Resources` — сериализация ответов (`UserResource`, `PostResource`)

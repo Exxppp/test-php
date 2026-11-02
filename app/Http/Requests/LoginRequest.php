@@ -3,18 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Dto\LoginData;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Входящие параметры авторизации пользователя.
  */
-class LoginRequest extends FormRequest
+class LoginRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, array<int, string>>
      */
