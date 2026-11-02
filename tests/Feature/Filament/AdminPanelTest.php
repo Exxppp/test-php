@@ -21,6 +21,8 @@ it('открывает панель админу после авторизаци
     $response->assertOk();
     $response->assertSee('Панель управления');
     $response->assertDontSee('Инфопанель');
+    // Сырые ключи переводов больше не всплывают в разметке
+    $response->assertDontSee('filament-panels::');
 });
 
 it('называет ресурсы по-русски во множественном числе', function (): void {
