@@ -17,33 +17,44 @@ it('обновляет пару токенов по refreshToken', function (): 
     $response = $this->withToken($refresh)->postJson('/api/refresh');
 
     $response->assertOk()
-        ->assertJsonStructure(['accessToken', 'refreshToken', 'tokenType', 'user'])
-        ->assertJsonPath('user.id', $user->id);
+        ->assertJsonStructure([
+            'meta' => ['success', 'error'],
+            'data' => ['user' => ['id'], 'accessToken', 'refreshToken'],
+        ])
+        ->assertJsonPath('meta.success', true)
+        ->assertJsonPath('data.user.id', $user->id);
 
     // Старый refresh-токен ревокнут (ротация)
     forgetAuthGuards();
-    $this->withToken($refresh)->postJson('/api/refresh')->assertUnauthorized();
+    $this->withToken($refresh)->postJson('/api/refresh')
+        ->assertUnauthorized()
+        ->assertJsonPath('meta.success', false)
+        ->assertJsonPath('meta.invalid_access_token', true);
 
     // Новый refreshToken нельзя использовать вместо accessToken
     forgetAuthGuards();
-    $this->withToken($response->json('refreshToken'))
+    $this->withToken($response->json('data.refreshToken'))
         ->getJson('/api/posts')
         ->assertForbidden();
 
     // Новая пара рабочая
     forgetAuthGuards();
-    $this->withToken($response->json('accessToken'))->getJson('/api/posts')->assertOk();
+    $this->withToken($response->json('data.accessToken'))->getJson('/api/posts')->assertOk();
 });
 
 it('не обновляет токены по accessToken', function (): void {
     $user = User::factory()->create();
     $access = $user->createToken('accessToken', ['access'], now()->addHour())->plainTextToken;
 
-    $this->withToken($access)->postJson('/api/refresh')->assertForbidden();
+    $this->withToken($access)->postJson('/api/refresh')
+        ->assertForbidden()
+        ->assertJsonPath('meta.success', false);
 });
 
 it('требует токен для refresh', function (): void {
-    $this->postJson('/api/refresh')->assertUnauthorized();
+    $this->postJson('/api/refresh')
+        ->assertUnauthorized()
+        ->assertJsonPath('meta.invalid_access_token', true);
 });
 
 it('ревокает все токены при logout', function (): void {
@@ -51,11 +62,16 @@ it('ревокает все токены при logout', function (): void {
     $access = $user->createToken('accessToken', ['access'])->plainTextToken;
     $user->createToken('refreshToken', ['refresh']);
 
-    $this->withToken($access)->postJson('/api/logout')->assertNoContent();
+    $this->withToken($access)->postJson('/api/logout')
+        ->assertOk()
+        ->assertJsonPath('meta.success', true)
+        ->assertJsonPath('data', []);
 
     expect($user->tokens()->count())->toBe(0);
 
     // Пользователь больше не аутентифицирован
     forgetAuthGuards();
-    $this->withToken($access)->getJson('/api/posts')->assertUnauthorized();
+    $this->withToken($access)->getJson('/api/posts')
+        ->assertUnauthorized()
+        ->assertJsonPath('meta.invalid_access_token', true);
 });

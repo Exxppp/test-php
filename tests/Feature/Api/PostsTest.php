@@ -4,8 +4,12 @@ use App\Models\Post;
 use App\Models\User;
 
 it('требует access-токен для создания и чтения публикаций', function (): void {
-    $this->getJson('/api/posts')->assertUnauthorized();
-    $this->postJson('/api/posts', ['title' => 'Заголовок', 'text' => 'Текст'])->assertUnauthorized();
+    $this->getJson('/api/posts')
+        ->assertUnauthorized()
+        ->assertJsonPath('meta.invalid_access_token', true);
+
+    $this->postJson('/api/posts', ['title' => 'Заголовок', 'text' => 'Текст'])
+        ->assertUnauthorized();
 });
 
 it('публикует пост от имени владельца токена', function (): void {
@@ -18,9 +22,13 @@ it('публикует пост от имени владельца токена'
     ]);
 
     $response->assertCreated()
-        ->assertJsonStructure(['message', 'data' => ['id', 'title', 'text', 'author', 'created_at']])
-        ->assertJsonPath('data.title', 'Первая публикация')
-        ->assertJsonPath('data.author.id', $user->id);
+        ->assertJsonStructure([
+            'meta' => ['success', 'error'],
+            'data' => ['post' => ['id', 'title', 'text', 'author', 'created_at', 'updated_at']],
+        ])
+        ->assertJsonPath('meta.success', true)
+        ->assertJsonPath('data.post.title', 'Первая публикация')
+        ->assertJsonPath('data.post.author.id', $user->id);
 
     $post = Post::query()->first();
     expect($post->user_id)->toBe($user->id)
@@ -32,8 +40,9 @@ it('валидирует параметры публикации', function (): 
     $access = $user->createToken('accessToken', ['access'])->plainTextToken;
 
     $this->withToken($access)->postJson('/api/posts', ['title' => ''])
-        ->assertStatus(422)
-        ->assertInvalid(['title', 'text']);
+        ->assertStatus(400)
+        ->assertJsonPath('meta.success', false)
+        ->assertJsonPath('meta.error', fn (string $error): bool => filled($error));
 });
 
 it('не принимает refreshToken вместо accessToken', function (): void {
@@ -41,7 +50,8 @@ it('не принимает refreshToken вместо accessToken', function ():
     $refresh = $user->createToken('refreshToken', ['refresh'])->plainTextToken;
 
     $this->withToken($refresh)->postJson('/api/posts', ['title' => 'T', 'text' => 't'])
-        ->assertForbidden();
+        ->assertForbidden()
+        ->assertJsonPath('meta.success', false);
 });
 
 it('возвращает ленту порциями с мета-информацией', function (): void {
@@ -52,10 +62,16 @@ it('возвращает ленту порциями с мета-информа�
     $response = $this->withToken($access)->getJson('/api/posts?limit=2&offset=1');
 
     $response->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'title', 'text', 'author', 'created_at']], 'meta']);
+        ->assertJsonStructure([
+            'meta' => ['success', 'error'],
+            'data' => [
+                'posts' => [['id', 'title', 'text', 'author', 'created_at']],
+                'pagination',
+            ],
+        ]);
 
-    expect($response->json('data'))->toHaveCount(2)
-        ->and($response->json('meta'))->toEqual([
+    expect($response->json('data.posts'))->toHaveCount(2)
+        ->and($response->json('data.pagination'))->toEqual([
             'total' => 5,
             'count' => 2,
             'limit' => 2,
@@ -77,7 +93,7 @@ it('сортирует ленту по названию', function (): void {
 
     $response->assertOk();
 
-    $titles = collect($response->json('data'))->pluck('title');
+    $titles = collect($response->json('data.posts'))->pluck('title');
     expect($titles->first())->toBe('Апрель')
         ->and($titles->last())->toBe('Черновик');
 });
@@ -91,7 +107,7 @@ it('сортирует ленту по дате по возрастанию', fu
 
     $response = $this->withToken($access)->getJson('/api/posts?order=asc');
 
-    $dates = collect($response->json('data'))->pluck('created_at');
+    $dates = collect($response->json('data.posts'))->pluck('created_at');
     expect($dates->first() <= $dates->last())->toBeTrue();
 });
 
@@ -106,22 +122,22 @@ it('фильтрует ленту по дате от и до', function (): void
     $response = $this->withToken($access)
         ->getJson('/api/posts?date_from='.now()->subDays(5)->toDateString());
 
-    expect($response->json('meta.total'))->toBe(2);
+    expect($response->json('data.pagination.total'))->toBe(2);
 
     $response = $this->withToken($access)
         ->getJson('/api/posts?date_from='.now()->subDays(5)->toDateString().'&date_to='.now()->toDateString());
 
-    expect($response->json('meta.total'))->toBe(2);
+    expect($response->json('data.pagination.total'))->toBe(2);
 });
 
 it('валидирует параметры сортировки и фильтров', function (): void {
     $user = User::factory()->create();
     $access = $user->createToken('accessToken', ['access'])->plainTextToken;
 
-    $this->withToken($access)->getJson('/api/posts?sort=id')->assertStatus(422);
-    $this->withToken($access)->getJson('/api/posts?limit=200')->assertStatus(422);
-    $this->withToken($access)->getJson('/api/posts?offset=-1')->assertStatus(422);
-    $this->withToken($access)->getJson('/api/posts?date_from=не-дата')->assertStatus(422);
+    $this->withToken($access)->getJson('/api/posts?sort=id')->assertStatus(400);
+    $this->withToken($access)->getJson('/api/posts?limit=200')->assertStatus(400);
+    $this->withToken($access)->getJson('/api/posts?offset=-1')->assertStatus(400);
+    $this->withToken($access)->getJson('/api/posts?date_from=не-дата')->assertStatus(400);
 });
 
 it('возвращает только мои публикации', function (): void {
@@ -136,8 +152,8 @@ it('возвращает только мои публикации', function ():
 
     $response->assertOk();
 
-    $authors = collect($response->json('data'))->pluck('author.id')->unique();
-    expect($response->json('data'))->toHaveCount(3)
-        ->and($response->json('meta.total'))->toBe(3)
+    $authors = collect($response->json('data.posts'))->pluck('author.id')->unique();
+    expect($response->json('data.posts'))->toHaveCount(3)
+        ->and($response->json('data.pagination.total'))->toBe(3)
         ->and($authors->values()->all())->toEqual([$alice->id]);
 });

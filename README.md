@@ -30,14 +30,27 @@ php artisan serve           # http://127.0.0.1:8000
 
 ## API
 
-Формат ответов — JSON. Списки возвращаются порциями: `{"data": [...], "meta": {total, count, limit, offset, sort, order}}`. Ошибки: `{"message": "..."}` (и `"errors"` при валидации) со статусами 401/404/409/422.
+Формат ответов — единая JSON-обёртка (совместима с мобильными клиентами):
+
+```json
+{
+  "meta": { "success": true, "error": "" },
+  "data": { "именованный ключ": { } }
+}
+```
+
+- успех: `meta.success = true`, `meta.error` пустой; данные — в `data` под именованными ключами (`user`, `accessToken`, `refreshToken`, `post`, `posts`, `pagination`);
+- ошибки (401/404/409/400): `meta.success = false`, текст — в `meta.error`, `data: []`;
+- при 401 дополнительно `meta.invalid_access_token = true` — сигнал клиенту перелогиниться;
+- ошибки валидации — HTTP 400, в `meta.error` текст первой ошибки;
+- списки порционно: `data.posts` + `data.pagination` `{total, count, limit, offset, sort, order}`.
 
 | Метод | URL | Описание |
 |---|---|---|
 | POST | `/api/register` | Регистрация: `name`, `email`, `password` → пара токенов |
 | POST | `/api/login` | Вход: `email`, `password` → пара токенов |
 | POST | `/api/refresh` | Bearer: **refreshToken** → новая пара токенов (ротация) |
-| POST | `/api/logout` | Bearer: accessToken → 204, ревок всех токенов |
+| POST | `/api/logout` | Bearer: accessToken → 200, ревок всех токенов |
 | POST | `/api/posts` | Bearer: accessToken; тело `title`, `text` → публикация поста |
 | GET | `/api/posts` | Лента всех публикаций (порционно) |
 | GET | `/api/posts/my` | Публикации текущего пользователя (порционно) |
@@ -82,7 +95,10 @@ Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman
 - `app/Http/Requests` — валидация и нормализация входящих параметров
 - `app/Services` — бизнес-логика и обработка ошибок (`AuthService`, `PostService`)
 - `app/Http/Resources` — сериализация ответов (`UserResource`, `PostResource`)
-- `app/Exceptions/Api` — доменные исключения с JSON-рендером (401/409), JSON принудительно включён для `api/*` (см. `bootstrap/app.php`)
+- `app/Exceptions/Api` — доменные исключения (401/409); единый JSON-рендер в обёртке — обработчик исключений в `bootstrap/app.php`
+- `app/Http/Api/Middleware/TransformApiResponse` — middleware-обёртка успешных ответов API в `{meta, data}`
+- `app/Http/Helpers/ResponseHelper` — конструктор обёрток (`getResponseWrap`, `getNotAuthorizedResponseWrap`, `getExceptionResponseWrap`)
+- JSON принудительно включён для `api/*` (`shouldRenderJsonWhen` в `bootstrap/app.php`)
 
 ## Тесты
 
