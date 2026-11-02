@@ -6,11 +6,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Сериализация публикации.
- *
- * @property Post $resource
- */
+/** @property Post $resource */
 final class PostResource extends JsonResource
 {
     /**

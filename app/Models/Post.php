@@ -12,11 +12,7 @@ class Post extends Model
     /** @use HasFactory<PostFactory> */
     use HasFactory;
 
-    /**
-     * Поля, разрешённые для массового заполнения.
-     *
-     * @var list<string>
-     */
+    /** @var list<string> */
     protected $fillable = [
         'title',
         'text',

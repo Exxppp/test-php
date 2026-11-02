@@ -4,9 +4,6 @@ namespace App\Http\Requests;
 
 use App\Http\Dto\LoginData;
 
-/**
- * Входящие параметры авторизации пользователя.
- */
 class LoginRequest extends ApiRequest
 {
     /**

@@ -2,9 +2,6 @@
 
 namespace App\Http\Dto;
 
-/**
- * Данные публикации поста.
- */
 final readonly class CreatePostData
 {
     public function __construct(
@@ -12,11 +9,7 @@ final readonly class CreatePostData
         public string $text,
     ) {}
 
-    /**
-     * Поля для создания публикации.
-     *
-     * @return array{title: string, text: string}
-     */
+    /** @return array{title: string, text: string} */
     public function toArray(): array
     {
         return [

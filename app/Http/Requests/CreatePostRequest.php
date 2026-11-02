@@ -4,9 +4,6 @@ namespace App\Http\Requests;
 
 use App\Http\Dto\CreatePostData;
 
-/**
- * Входящие параметры публикации поста в блог.
- */
 class CreatePostRequest extends ApiRequest
 {
     /**

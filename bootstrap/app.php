@@ -24,19 +24,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Middleware abilities Sanctum для проверки типа токена
         $middleware->alias([
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
         ]);
 
-        // Единая обёртка успешных ответов API: {meta: {success, error}, data: {...}}
         $middleware->appendToGroup('api', [
             TransformApiResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Все исключения из API отдаём в формате JSON
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request, ?Throwable $e) => $request->is('api/*'),
         );
@@ -55,7 +52,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Несуществующий маршрут API
         $exceptions->render(function (NotFoundHttpException $exception, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(
@@ -69,7 +65,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Метод запроса не разрешён для маршрута
         $exceptions->render(function (MethodNotAllowedHttpException $exception, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(
@@ -111,7 +106,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Доменные исключения API и прочие ошибки
         $exceptions->render(function (Throwable $exception, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(

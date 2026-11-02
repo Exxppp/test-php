@@ -2,9 +2,6 @@
 
 namespace App\Http\Dto;
 
-/**
- * Данные регистрации пользователя (перенос валидированных параметров).
- */
 final readonly class RegisterData
 {
     public function __construct(
@@ -13,11 +10,7 @@ final readonly class RegisterData
         public string $password,
     ) {}
 
-    /**
-     * Поля для массового создания пользователя.
-     *
-     * @return array{name: string, email: string, password: string}
-     */
+    /** @return array{name: string, email: string, password: string} */
     public function toArray(): array
     {
         return [

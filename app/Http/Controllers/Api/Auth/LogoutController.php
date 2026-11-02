@@ -35,7 +35,6 @@ final class LogoutController extends ApiController
     {
         $auth->logout();
 
-        // Обёртку {meta, data} накладывает middleware TransformApiResponse
         return response()->json([]);
     }
 }

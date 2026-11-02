@@ -16,11 +16,7 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Поля, разрешённые для массового заполнения.
-     *
-     * @var list<string>
-     */
+    /** @var list<string> */
     protected $fillable = [
         'name',
         'email',
@@ -28,21 +24,13 @@ class User extends Authenticatable implements FilamentUser
         'is_admin',
     ];
 
-    /**
-     * Скрываемые при сериализации поля.
-     *
-     * @var list<string>
-     */
+    /** @var list<string> */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Атрибуты, приведение которых нужно описать.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [

@@ -2,10 +2,6 @@
 
 namespace App\Http\Dto;
 
-/**
- * Нормализованные параметры выборки публикаций (лента / мои публикации).
- * Значения по умолчанию подставляет ListPostsRequest (база ListRequest).
- */
 final readonly class ListPostData
 {
     public function __construct(

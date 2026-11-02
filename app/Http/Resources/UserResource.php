@@ -6,11 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Сериализация пользователя.
- *
- * @property User $resource
- */
+/** @property User $resource */
 final class UserResource extends JsonResource
 {
     /**

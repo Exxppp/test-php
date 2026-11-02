@@ -9,10 +9,6 @@ class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
 
-    /**
-     * Заголовок вместо шаблона «Создать :label» Filament:
-     * в русском падеже имя поля не совпадает с лейблом.
-     */
     public function getTitle(): string
     {
         return 'Создать пользователя';

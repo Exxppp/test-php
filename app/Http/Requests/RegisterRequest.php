@@ -5,9 +5,6 @@ namespace App\Http\Requests;
 use App\Http\Dto\RegisterData;
 use Illuminate\Validation\Rules\Password;
 
-/**
- * Входящие параметры регистрации пользователя.
- */
 class RegisterRequest extends ApiRequest
 {
     /**
