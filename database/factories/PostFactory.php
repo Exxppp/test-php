@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PostFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * Значение по умолчанию для создания модели.
      *
      * @return array<string, mixed>
      */

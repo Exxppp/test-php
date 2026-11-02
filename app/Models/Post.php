@@ -13,7 +13,7 @@ class Post extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
+     * Поля, разрешённые для массового заполнения.
      *
      * @var list<string>
      */
