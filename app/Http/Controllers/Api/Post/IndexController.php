@@ -16,8 +16,9 @@ final class IndexController
     {
         $result = $posts->list(author: null, filters: $request->filters());
 
-        return PostResource::collection($result['posts'])
-            ->additional(['meta' => $result['meta']])
-            ->response();
+        return response()->json([
+            'posts' => PostResource::collection($result['posts']),
+            'pagination' => $result['meta'],
+        ]);
     }
 }

@@ -14,10 +14,9 @@ final class RegisterController
         $result = $auth->register($request->validated());
 
         return response()->json([
+            'user' => new UserResource($result->user),
             'accessToken' => $result->accessToken,
             'refreshToken' => $result->refreshToken,
-            'tokenType' => 'Bearer',
-            'user' => new UserResource($result->user),
         ], 201);
     }
 }

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Services\AuthService;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse;
 
 final class LogoutController
 {
-    public function __invoke(AuthService $auth): Response
+    public function __invoke(AuthService $auth): JsonResponse
     {
         $auth->logout();
 
-        return response()->noContent();
+        // Обёртку {meta, data} накладывает middleware TransformApiResponse
+        return response()->json([]);
     }
 }

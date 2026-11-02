@@ -16,8 +16,9 @@ final class MyController
     {
         $result = $posts->list($request->user(), $request->filters());
 
-        return PostResource::collection($result['posts'])
-            ->additional(['meta' => $result['meta']])
-            ->response();
+        return response()->json([
+            'posts' => PostResource::collection($result['posts']),
+            'pagination' => $result['meta'],
+        ]);
     }
 }

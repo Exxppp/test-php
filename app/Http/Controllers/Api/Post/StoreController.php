@@ -13,9 +13,9 @@ final class StoreController
     {
         $post = $posts->create($request->user(), $request->validated());
 
-        return PostResource::make($post->loadMissing('author'))
-            ->additional(['message' => 'Публикация сохранена.'])
-            ->response()
-            ->setStatusCode(201);
+        return response()->json(
+            ['post' => PostResource::make($post->loadMissing('author'))],
+            201,
+        );
     }
 }

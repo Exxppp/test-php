@@ -3,10 +3,12 @@
 namespace App\Exceptions\Api;
 
 use Exception;
-use Illuminate\Http\JsonResponse;
 
 /**
- * Базовое доменное исключение API: отдаёт ошибку в едином JSON-формате.
+ * Базовое доменное исключение API.
+ *
+ * Рендерится обработчиком исключений (bootstrap/app.php) в единую
+ * обёртку {meta: {success: false, error: ...}, data: []}.
  */
 abstract class ApiException extends Exception
 {
@@ -15,12 +17,5 @@ abstract class ApiException extends Exception
     public function getStatus(): int
     {
         return $this->status;
-    }
-
-    public function render(): JsonResponse
-    {
-        return response()->json([
-            'message' => $this->getMessage(),
-        ], $this->status);
     }
 }
