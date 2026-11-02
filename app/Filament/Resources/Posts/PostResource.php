@@ -22,6 +22,14 @@ class PostResource extends Resource
 
     protected static ?string $modelLabel = 'публикация';
 
+    /**
+     * Заголовки списка: вместо авто-плюрализатора (даёт «Публикацияs»).
+     */
+    public static function getPluralModelLabel(): string
+    {
+        return 'Публикации';
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     public static function form(Schema $schema): Schema

@@ -22,6 +22,14 @@ class UserResource extends Resource
 
     protected static ?string $modelLabel = 'пользователь';
 
+    /**
+     * Заголовки списка: вместо авто-плюрализатора (даёт «Пользовательs»).
+     */
+    public static function getPluralModelLabel(): string
+    {
+        return 'Пользователи';
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     public static function form(Schema $schema): Schema
