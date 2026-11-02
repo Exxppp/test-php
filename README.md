@@ -104,7 +104,7 @@ Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman
 
 ## Swagger
 
-Swagger UI: [`/api/documentation`](http://127.0.0.1:8000/api/documentation) (при запущенном `php artisan serve`), JSON-спека: `GET /docs`.
+Swagger UI: [`/swagger`](http://127.0.0.1:8000/swagger) (при запущенном `php artisan serve`), JSON-спека: `GET /docs`.
 
 Аннотации описаны в PHPDoc контроллеров; общие схемы обёртки (`Meta`, `AuthData`, `FeedData`, `ErrorResponse` и др.) — в `app/Http/Api/Controllers/ApiController.php`. После правки аннотаций перегенерировать:
 
