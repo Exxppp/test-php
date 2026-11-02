@@ -58,9 +58,10 @@ it('называет страницы создания с русскими па�
     $this->get('/admin/users/create')
         ->assertOk()
         ->assertSee('Создать пользователя')
-        ->assertSee('Создать и создать ещё')
+        ->assertSee('Создать ещё')
         ->assertDontSee('Создать Пользователь')
-        ->assertDontSee('Создать и Создать еще');
+        ->assertDontSee('Создать и Создать еще')
+        ->assertDontSee('Создать и создать ещё');
 
     $this->get('/admin/posts/create')
         ->assertOk()
