@@ -1,59 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Blog API (Backend: PHP / Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API и админка для мобильного приложения «Блог»: регистрация и вход пользователей с парой токенов (access + refresh), публикация постов, порционная выдача общей ленты и «моих публикаций» с сортировками и фильтрацией, плюс админ-панель Filament.
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Стек
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Laravel 12, PHP 8.4, Composer
+- MySQL 8+ (миграции обязательны)
+- Laravel Sanctum — `accessToken` (60 мин, ability `access`) + `refreshToken` (30 дней, ability `refresh`), выпускаются через `$user->createToken()`
+- Filament 4 — админка `/admin`
+- Pest — автотесты
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Установка и запуск
 
-## Learning Laravel
+```bash
+composer install
+cp .env.example .env        # при первом запуске; затем php artisan key:generate
+# настрать БД в .env: DB_CONNECTION=mysql, DB_DATABASE=blog ...
+mysql -uroot -e "CREATE DATABASE IF NOT EXISTS blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+php artisan migrate --seed
+php artisan serve           # http://127.0.0.1:8000
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Аккаунты из сидера: админ `admin@blog.local / password`, пользователь `user@blog.local / password`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Админка
 
-## Laravel Sponsors
+`http://127.0.0.1:8000/admin` — вход по email и паролю (форма Filament). В панель допускаются только пользователи с `is_admin = true` (`User::canAccessPanel()`). Разделы: **Пользователи** и **Публикации** — стандартный CRUD с поиском, сортировкой и фильтром по дате (публикации).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## API
 
-### Premium Partners
+Формат ответов — JSON. Списки возвращаются порциями: `{"data": [...], "meta": {total, count, limit, offset, sort, order}}`. Ошибки: `{"message": "..."}` (и `"errors"` при валидации) со статусами 401/404/409/422.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+| Метод | URL | Описание |
+|---|---|---|
+| POST | `/api/register` | Регистрация: `name`, `email`, `password` → пара токенов |
+| POST | `/api/login` | Вход: `email`, `password` → пара токенов |
+| POST | `/api/refresh` | Bearer: **refreshToken** → новая пара токенов (ротация) |
+| POST | `/api/logout` | Bearer: accessToken → 204, ревок всех токенов |
+| POST | `/api/posts` | Bearer: accessToken; тело `title`, `text` → публикация поста |
+| GET | `/api/posts` | Лента всех публикаций (порционно) |
+| GET | `/api/posts/my` | Публикации текущего пользователя (порционно) |
 
-## Contributing
+Параметры `GET /api/posts` и `GET /api/posts/my`:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- `sort` — `date` (по умолчанию) или `title`
+- `order` — `asc` или `desc` (по умолчанию `desc`)
+- `limit` — размер порции, 1–100 (по умолчанию 15, необязательный)
+- `offset` — смещение для порционной загрузки (необязательный)
+- `date_from`, `date_to` — фильтр по дате публикации, `YYYY-MM-DD` (необязательные)
 
-## Code of Conduct
+Примеры:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+# Регистрация
+curl -s -X POST http://127.0.0.1:8000/api/register \
+  -H 'Accept: application/json' \
+  -d '{"name":"Иван","email":"ivan@example.com","password":"password123"}'
 
-## Security Vulnerabilities
+# Вход (используйте accessToken в заголовке Authorization ниже)
+curl -s -X POST http://127.0.0.1:8000/api/login \
+  -H 'Accept: application/json' \
+  -d '{"email":"user@blog.local","password":"password"}'
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Публикация поста
+curl -s -X POST http://127.0.0.1:8000/api/posts \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Bearer <accessToken>' \
+  -d '{"title":"Заголовок","text":"Текст публикации"}'
 
-## License
+# Лента: сортировка по названию по возрастанию, порция 10
+curl -s 'http://127.0.0.1:8000/api/posts?sort=title&order=asc&limit=10&offset=0' \
+  -H 'Accept: application/json' -H 'Authorization: Bearer <accessToken>'
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman/blog-api.postman_collection.json) — токены сохраняются в переменные коллекции автоматически.
+
+## Архитектура (тонкие контроллеры)
+
+- `app/Http/Controllers/Api` — контроллеры-одноклассники: только валидация → сервис → ответ
+- `app/Http/Requests` — валидация и нормализация входящих параметров
+- `app/Services` — бизнес-логика и обработка ошибок (`AuthService`, `PostService`)
+- `app/Http/Resources` — сериализация ответов (`UserResource`, `PostResource`)
+- `app/Exceptions/Api` — доменные исключения с JSON-рендером (401/409), JSON принудительно включён для `api/*` (см. `bootstrap/app.php`)
+
+## Тесты
+
+```bash
+php artisan test
+```
+
+25 Pest-тестов: аутентификация (регистрация/вход/валидация), ротация и ревок токенов, публикация постов, лента (limit/offset/sort/order/date_from/date_to), мои публикации, контроль доступа к админке Filament.
