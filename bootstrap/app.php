@@ -13,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -49,6 +51,34 @@ return Application::configure(basePath: dirname(__DIR__))
                         [],
                     ),
                     400,
+                );
+            }
+        });
+
+        // Несуществующий маршрут API
+        $exceptions->render(function (NotFoundHttpException $exception, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(
+                    ResponseHelper::getResponseWrap(
+                        false,
+                        sprintf('Маршрут %s не найден.', $request->path()),
+                        [],
+                    ),
+                    404,
+                );
+            }
+        });
+
+        // Метод запроса не разрешён для маршрута
+        $exceptions->render(function (MethodNotAllowedHttpException $exception, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(
+                    ResponseHelper::getResponseWrap(
+                        false,
+                        sprintf('Метод %s не поддерживается этим маршрутом.', $request->method()),
+                        [],
+                    ),
+                    405,
                 );
             }
         });
