@@ -14,7 +14,7 @@ final class IndexController
 {
     public function __invoke(ListPostsRequest $request, PostService $posts): JsonResponse
     {
-        $result = $posts->list(author: null, filters: $request->filters());
+        $result = $posts->list(author: null, filters: $request->toDto());
 
         return response()->json([
             'posts' => PostResource::collection($result['posts']),

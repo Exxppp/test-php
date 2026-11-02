@@ -14,7 +14,7 @@ final class MyController
 {
     public function __invoke(ListPostsRequest $request, PostService $posts): JsonResponse
     {
-        $result = $posts->list($request->user(), $request->filters());
+        $result = $posts->list($request->user(), $request->toDto());
 
         return response()->json([
             'posts' => PostResource::collection($result['posts']),

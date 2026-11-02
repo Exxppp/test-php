@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Exceptions\Api\EmailAlreadyUsedException;
 use App\Exceptions\Api\InvalidCredentialsException;
+use App\Http\Dto\LoginData;
+use App\Http\Dto\RegisterData;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -12,13 +14,13 @@ use Laravel\Sanctum\PersonalAccessToken;
  * Бизнес-логика аутентификации: регистрация, вход, refresh, logout.
  *
  * Токены выпускаются через Sanctum ($model->createToken()):
- * accessToken — ability "access", refreshToken — ability "refresh".
+ * access_token — ability "access", refresh_token — ability "refresh".
  */
 final class AuthService
 {
-    private const ACCESS_TOKEN_NAME = 'accessToken';
+    private const ACCESS_TOKEN_NAME = 'access_token';
 
-    private const REFRESH_TOKEN_NAME = 'refreshToken';
+    private const REFRESH_TOKEN_NAME = 'refresh_token';
 
     private const ACCESS_TOKEN_TTL_MINUTES = 60;
 
@@ -26,32 +28,24 @@ final class AuthService
 
     /**
      * Регистрация пользователя и выпуск пары токенов.
-     *
-     * @param  array{name: string, email: string, password: string}  $data
      */
-    public function register(array $data): AuthResult
+    public function register(RegisterData $data): AuthResult
     {
-        if (User::query()->where('email', $data['email'])->exists()) {
+        if (User::query()->where('email', $data->email)->exists()) {
             throw new EmailAlreadyUsedException;
         }
 
-        return $this->issueTokens(User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-        ]));
+        return $this->issueTokens(User::create($data->toArray()));
     }
 
     /**
      * Аутентификация пользователя по email и паролю.
-     *
-     * @param  array{email: string, password: string}  $data
      */
-    public function login(array $data): AuthResult
+    public function login(LoginData $data): AuthResult
     {
-        $user = User::query()->where('email', $data['email'])->first();
+        $user = User::query()->where('email', $data->email)->first();
 
-        if ($user === null || ! Hash::check($data['password'], $user->password)) {
+        if ($user === null || ! Hash::check($data->password, $user->password)) {
             throw new InvalidCredentialsException;
         }
 

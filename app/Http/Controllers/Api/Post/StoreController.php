@@ -11,7 +11,7 @@ final class StoreController
 {
     public function __invoke(CreatePostRequest $request, PostService $posts): JsonResponse
     {
-        $post = $posts->create($request->user(), $request->validated());
+        $post = $posts->create($request->user(), $request->toDto());
 
         return response()->json(
             ['post' => PostResource::make($post->loadMissing('author'))],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Dto\RegisterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
@@ -25,5 +26,14 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', Password::min(8)],
         ];
+    }
+
+    public function toDto(): RegisterData
+    {
+        return new RegisterData(
+            name: $this->validated('name'),
+            email: $this->validated('email'),
+            password: $this->validated('password'),
+        );
     }
 }

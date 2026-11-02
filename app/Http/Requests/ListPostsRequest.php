@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Dto\ListPostData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,8 +11,6 @@ use Illuminate\Validation\Rule;
  */
 class ListPostsRequest extends FormRequest
 {
-    private const DEFAULT_LIMIT = 15;
-
     public function authorize(): bool
     {
         return true;
@@ -34,18 +33,16 @@ class ListPostsRequest extends FormRequest
 
     /**
      * Нормализованные параметры выборки со значениями по умолчанию.
-     *
-     * @return array<string, mixed>
      */
-    public function filters(): array
+    public function toDto(): ListPostData
     {
-        return [
-            'sort' => $this->input('sort', 'date'),
-            'order' => $this->input('order', 'desc'),
-            'limit' => $this->input('limit', self::DEFAULT_LIMIT),
-            'offset' => $this->input('offset', 0),
-            'date_from' => $this->input('date_from'),
-            'date_to' => $this->input('date_to'),
-        ];
+        return new ListPostData(
+            sort: (string) $this->input('sort', 'date'),
+            order: (string) $this->input('order', 'desc'),
+            limit: (int) $this->input('limit', ListPostData::DEFAULT_LIMIT),
+            offset: (int) $this->input('offset', 0),
+            dateFrom: $this->input('date_from'),
+            dateTo: $this->input('date_to'),
+        );
     }
 }

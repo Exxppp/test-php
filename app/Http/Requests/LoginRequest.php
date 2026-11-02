@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Dto\LoginData;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -23,5 +24,13 @@ class LoginRequest extends FormRequest
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
+    }
+
+    public function toDto(): LoginData
+    {
+        return new LoginData(
+            email: $this->validated('email'),
+            password: $this->validated('password'),
+        );
     }
 }

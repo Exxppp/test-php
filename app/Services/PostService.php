@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Http\Dto\CreatePostData;
+use App\Http\Dto\ListPostData;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -12,8 +14,6 @@ use Illuminate\Support\Collection;
  */
 final class PostService
 {
-    private const DEFAULT_LIMIT = 15;
-
     /** Допустимые варианты сортировки: по дате и по названию. */
     private const SORTS = [
         'date' => 'created_at',
@@ -22,49 +22,41 @@ final class PostService
 
     /**
      * Публикация поста от имени пользователя.
-     *
-     * @param  array{title: string, text: string}  $data
      */
-    public function create(User $author, array $data): Post
+    public function create(User $author, CreatePostData $data): Post
     {
-        return $author->posts()->create($data);
+        return $author->posts()->create($data->toArray());
     }
 
     /**
      * Порционная выборка публикаций с фильтрацией и сортировкой.
      *
-     * @param  array<string, mixed>  $filters  — нормализованные фильтры ListPostsRequest
      * @return array{posts: Collection<int, Post>, meta: array<string, int|string>}
      */
-    public function list(?User $author, array $filters): array
+    public function list(?User $author, ListPostData $filters): array
     {
-        $sort = $filters['sort'] ?? 'date';
-        $order = $filters['order'] ?? 'desc';
-        $limit = (int) ($filters['limit'] ?? self::DEFAULT_LIMIT);
-        $offset = (int) ($filters['offset'] ?? 0);
-
         $query = Post::query()->with('author');
 
         if ($author !== null) {
             $query->where('user_id', $author->id);
         }
 
-        if (filled($filters['date_from'] ?? null)) {
-            $query->where('created_at', '>=', $filters['date_from']);
+        if ($filters->dateFrom !== null) {
+            $query->where('created_at', '>=', $filters->dateFrom);
         }
 
-        if (filled($filters['date_to'] ?? null)) {
-            $query->where('created_at', '<=', Carbon::parse($filters['date_to'])->endOfDay());
+        if ($filters->dateTo !== null) {
+            $query->where('created_at', '<=', Carbon::parse($filters->dateTo)->endOfDay());
         }
 
         $total = (clone $query)->count();
 
         $posts = $query
-            ->orderBy(self::SORTS[$sort] ?? 'created_at', $order)
+            ->orderBy(self::SORTS[$filters->sort] ?? 'created_at', $filters->order)
             // Вторичное поле для детерминированной пагинации
-            ->orderBy('id', $order)
-            ->offset($offset)
-            ->limit($limit)
+            ->orderBy('id', $filters->order)
+            ->offset($filters->offset)
+            ->limit($filters->limit)
             ->get();
 
         return [
@@ -72,10 +64,10 @@ final class PostService
             'meta' => [
                 'total' => $total,
                 'count' => $posts->count(),
-                'limit' => $limit,
-                'offset' => $offset,
-                'sort' => $sort,
-                'order' => $order,
+                'limit' => $filters->limit,
+                'offset' => $filters->offset,
+                'sort' => $filters->sort,
+                'order' => $filters->order,
             ],
         ];
     }

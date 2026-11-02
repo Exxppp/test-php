@@ -12,8 +12,8 @@ final class RefreshController
         $result = $auth->refresh();
 
         return response()->json([
-            'accessToken' => $result->accessToken,
-            'refreshToken' => $result->refreshToken,
+            'access_token' => $result->accessToken,
+            'refresh_token' => $result->refreshToken,
         ]);
     }
 }

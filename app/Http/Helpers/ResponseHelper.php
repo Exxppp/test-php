@@ -3,11 +3,25 @@
 namespace App\Http\Helpers;
 
 use App\Exceptions\Api\ApiException;
+use App\Http\Resources\UserResource;
+use App\Services\AuthResult;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 final class ResponseHelper
 {
+    /**
+     * Единая сборка ответа аутентификации: пользователь и пара токенов.
+     */
+    public static function authPayload(AuthResult $result): array
+    {
+        return [
+            'user' => new UserResource($result->user),
+            'access_token' => $result->accessToken,
+            'refresh_token' => $result->refreshToken,
+        ];
+    }
+
     /**
      * Единая обёртка ответов API: {meta: {success, error}, data: {...}}.
      */
