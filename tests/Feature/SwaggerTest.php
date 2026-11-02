@@ -13,12 +13,18 @@ it('не отвечает на старом пути /api/documentation', functi
     $this->get('/api/documentation')->assertNotFound();
 });
 
-it('отдаёт спецификацию OpenAPI по пути /docs', function (): void {
+it('отдаёт спецификацию OpenAPI по пути /swagger.json', function (): void {
     // Спецификация генерируется на месте: у ревьювера её может не быть
     Artisan::call('l5-swagger:generate');
 
-    $response = $this->get('/docs');
+    $response = $this->get('/swagger.json');
 
     $response->assertOk();
     expect($response->json('openapi'))->toBe('3.0.0');
+});
+
+it('не отвечает на старом пути /docs', function (): void {
+    Artisan::call('l5-swagger:generate');
+
+    $this->get('/docs')->assertNotFound();
 });

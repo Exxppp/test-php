@@ -87,8 +87,6 @@ curl -s 'http://127.0.0.1:8000/api/posts?sort=title&order=asc&limit=10&offset=0'
   -H 'Accept: application/json' -H 'Authorization: Bearer <accessToken>'
 ```
 
-Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman/blog-api.postman_collection.json) — токены сохраняются в переменные коллекции автоматически.
-
 ## Архитектура (тонкие контроллеры)
 
 - `app/Http/Controllers/Api` — контроллеры-одноклассники: только валидация → сервис → ответ
@@ -104,7 +102,7 @@ Postman-коллекция: [`postman/blog-api.postman_collection.json`](postman
 
 ## Swagger
 
-Swagger UI: [`/swagger`](http://127.0.0.1:8000/swagger) (при запущенном `php artisan serve`), JSON-спека: `GET /docs`.
+Swagger UI: [`/swagger`](http://127.0.0.1:8000/swagger) (при запущенном `php artisan serve`), JSON-спека: `GET /swagger.json`.
 
 Аннотации описаны в PHPDoc контроллеров; общие схемы обёртки (`Meta`, `AuthData`, `FeedData`, `ErrorResponse` и др.) — в `app/Http/Api/Controllers/ApiController.php`. После правки аннотаций перегенерировать:
 
